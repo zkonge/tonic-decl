@@ -1,0 +1,27 @@
+[package]
+name = "tonic-decl-tests"
+version = "0.0.0"
+# deliberately not the edition of tonic-decl: the macros must work for edition 2021 callers
+edition = "2021"
+publish = false
+
+[features]
+default = ["client", "server"]
+client = []
+server = []
+
+[dependencies]
+prost = { workspace = true, features = ["std", "derive"] }
+tonic-decl.workspace = true
+
+[dev-dependencies]
+http.workspace = true
+tokio = { workspace = true, features = ["macros", "rt-multi-thread", "net"] }
+tokio-stream.workspace = true
+tonic = { workspace = true, features = ["transport", "router"] }
+tonic-prost.workspace = true
+tower-service.workspace = true
+
+[[test]]
+name = "grpc"
+required-features = ["client", "server"]

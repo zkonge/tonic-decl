@@ -1,0 +1,41 @@
+[package]
+name = "tonic-decl"
+version = "0.0.1"
+edition = "2024"
+license = "Apache-2.0"
+repository = "https://github.com/zkonge/tonic-decl"
+readme = "README.md"
+description = "Declare tonic gRPC client and server stubs with macro_rules, without build scripts or protoc"
+keywords = ["grpc", "tonic", "protobuf", "macro"]
+categories = ["network-programming", "api-bindings"]
+
+[dependencies]
+futures-core.workspace = true
+http.workspace = true
+http-body.workspace = true
+prost.workspace = true
+tonic.workspace = true
+tonic-prost.workspace = true
+tower-service.workspace = true
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+tokio-stream.workspace = true
+tonic = { workspace = true, features = ["transport"] }
+
+[workspace]
+resolver = "3"
+members = ["testsuite"]
+
+[workspace.dependencies]
+tonic-decl = { path = ".", version = "0.0.1" }
+
+futures-core = { version = "0.3.32", default-features = false }
+http = { version = "1.4.0", default-features = false }
+http-body = { version = "1.0.1", default-features = false }
+prost = { version = "0.14.3", default-features = false }
+tokio = { version = "1.53.2", default-features = false }
+tokio-stream = { version = "0.1.19", default-features = false }
+tonic = { version = "0.14.6", default-features = false }
+tonic-prost = { version = "0.14.6", default-features = false }
+tower-service = { version = "0.3.3", default-features = false }
