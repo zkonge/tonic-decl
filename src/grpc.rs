@@ -2,7 +2,7 @@
 ///
 /// ```text
 /// define_grpc! {
-///     /// Attributes here are applied to the client and server structs.
+///     /// Attributes here are applied to the trait and the client and server structs.
 ///     TraitName,
 ///     /// Attributes here are applied to all client items, e.g. `#[cfg(feature = "client")]`.
 ///     ClientName,
@@ -10,7 +10,7 @@
 ///     ServerName,
 ///     "package.Service",
 ///
-///     /// Attributes here are applied to the generated methods.
+///     /// Attributes here are applied to the generated methods, `cfg` included.
 ///     fn unary("Unary")(Request) -> (Response);
 ///     fn server_streaming("ServerStreaming")(Request) -> (stream Response);
 ///     fn client_streaming("ClientStreaming")(stream Request) -> (Response);
@@ -31,6 +31,9 @@
 ///   `tonic::transport::Channel`.
 /// - `TraitName`: the trait to implement on the server side, and `ServerName<T>`, which turns an
 ///   implementation into a tower `Service` with `into_service()`.
+///
+/// The client also has `new`, `with_origin`, `max_decoding_message_size` and
+/// `max_encoding_message_size`, so RPC methods can't use those names.
 ///
 /// Both sides are generated unless gated. Attributes written before `ClientName` / `ServerName`
 /// are copied to every item of that side, so `#[cfg(...)]` and `#[cfg_attr(...)]` make a side

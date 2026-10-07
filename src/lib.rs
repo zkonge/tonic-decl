@@ -16,7 +16,7 @@ pub mod __private {
     pub use tonic_prost;
     pub use tower_service;
 
-    pub use crate::service::{NamedSvcFn, SvcFn, grpc_unimplemented};
+    pub use crate::service::{NamedSvcFn, SvcFn, grpc_unimplemented, ready};
 
     pub type StdError = Box<dyn core::error::Error + Send + Sync + 'static>;
 }

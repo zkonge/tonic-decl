@@ -114,6 +114,10 @@ tonic_decl::define_grpc! {
 }
 ```
 
-`into_service()` returns a tower `Service` that works with `tonic::transport::Server`,
-`tonic::service::Routes` and `tonic::service::interceptor::InterceptedService`. The stub
+Unlike `tonic-build`, the server struct itself is not a `Service`: `into_service()` returns a
+tower `Service` that works with `tonic::transport::Server`, `tonic::service::Routes` and
+`tonic::service::interceptor::InterceptedService`. The stub
 itself does no heap allocation per request; tonic's codec and router still do.
+
+Not supported yet: compression (`send_compressed` / `accept_compressed`) and codecs other than
+prost.

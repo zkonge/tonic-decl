@@ -10,10 +10,13 @@ use tonic::{
     },
     Code, Request, Status,
 };
-use tonic_decl_tests::echo::{EchoClient, EchoServer, MissingClient};
+use tonic_decl_tests::{
+    attrs::{AttrsClient, AttrsServer},
+    echo::{EchoClient, EchoServer, MissingClient},
+};
 use tower_service::Service;
 
-use self::common::{req, MyEcho};
+use self::common::{req, MyAttrs, MyEcho};
 
 async fn connect(router: Router) -> Channel {
     let incoming = TcpIncoming::bind("127.0.0.1:0".parse().unwrap()).unwrap();
@@ -164,4 +167,52 @@ async fn direct_call() {
         let response = svc.call(request).await.unwrap();
         assert_eq!(response.headers()["grpc-status"], "12", "{path}");
     }
+}
+
+async fn attrs_client() -> AttrsClient<Channel> {
+    let svc = AttrsServer::new(MyAttrs).into_service();
+    AttrsClient::new(connect(Server::builder().add_service(svc)).await)
+}
+
+#[tokio::test]
+async fn method_named_like_client_helper() {
+    let mut client = attrs_client().await;
+
+    let reply = client.ready(req("ready")).await.unwrap().into_inner();
+    assert_eq!(reply.message, "ready");
+}
+
+#[tokio::test]
+#[allow(deprecated)]
+async fn deprecated_method_and_error_status() {
+    let mut client = attrs_client().await;
+
+    let status = client.old(req("x")).await.unwrap_err();
+    assert_eq!(status.code(), Code::FailedPrecondition);
+    assert_eq!(status.message(), "deprecated");
+}
+
+#[tokio::test]
+async fn opaque_bidi_streaming() {
+    let mut client = attrs_client().await;
+
+    let requests = tokio_stream::iter([req("x"), req("y")]);
+    let stream = client.bidi(requests).await.unwrap().into_inner();
+    let replies = stream
+        .map(|reply| reply.unwrap().message)
+        .collect::<Vec<_>>()
+        .await;
+    assert_eq!(replies, ["x!", "y!"]);
+}
+
+#[tokio::test]
+async fn cfg_removes_route() {
+    let mut svc = AttrsServer::new(MyAttrs).into_service();
+
+    let request = http::Request::builder()
+        .uri("/test.Attrs/Removed")
+        .body(tonic::body::Body::empty())
+        .unwrap();
+    let response = svc.call(request).await.unwrap();
+    assert_eq!(response.headers()["grpc-status"], "12");
 }

@@ -5,7 +5,10 @@ use std::{
 
 use http::{Response as HttpResponse, header::CONTENT_TYPE};
 use tonic::{
-    Code, Result, Status, body::Body as TonicBody, metadata::GRPC_CONTENT_TYPE,
+    Code, Result, Status,
+    body::Body as TonicBody,
+    client::{Grpc, GrpcService},
+    metadata::GRPC_CONTENT_TYPE,
     server::NamedService,
 };
 use tower_service::Service;
@@ -55,6 +58,18 @@ where
 
 impl<F, T: NamedService> NamedService for NamedSvcFn<F, T> {
     const NAME: &'static str = T::NAME;
+}
+
+/// Waits until the client transport is ready, a free function so that it can't collide with the
+/// RPC methods of the generated client.
+pub async fn ready<T>(grpc: &mut Grpc<T>) -> Result<()>
+where
+    T: GrpcService<TonicBody>,
+    T::Error: Into<crate::__private::StdError>,
+{
+    grpc.ready()
+        .await
+        .map_err(|e| Status::unknown(format!("Service was not ready: {}", e.into())))
 }
 
 pub fn grpc_unimplemented() -> HttpResponse<TonicBody> {

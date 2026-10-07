@@ -59,6 +59,35 @@ pub mod echo {
     }
 }
 
+/// Stubs with attributes on methods, checked with strict lints.
+pub mod attrs {
+    #![deny(missing_docs, deprecated)]
+
+    use super::pb::{EchoReply, EchoRequest};
+
+    ::tonic_decl::define_grpc! {
+        /// Service with method attributes.
+        Attrs,
+        AttrsClient,
+        AttrsServer,
+        "test.Attrs",
+
+        /// Named like the readiness check of the client.
+        fn ready("Ready")(EchoRequest) -> (EchoReply);
+
+        /// Always fails.
+        #[deprecated(note = "use `ready`")]
+        fn old("Old")(EchoRequest) -> (EchoReply);
+
+        /// Never generated, nor routed.
+        #[cfg(any())]
+        fn removed("Removed")(EchoRequest) -> (EchoReply);
+
+        /// Returns each request message, as an opaque stream.
+        fn bidi("Bidi")(stream EchoRequest) -> (stream EchoReply);
+    }
+}
+
 /// Stubs expanded next to items that shadow the std names used by the macros.
 #[allow(dead_code, unused_imports, unused_macros, non_camel_case_types)]
 pub mod shadowed {

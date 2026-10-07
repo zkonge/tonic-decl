@@ -1,8 +1,9 @@
 #![allow(dead_code)]
 
 use tokio_stream::{adapters::Map, Stream, StreamExt};
-use tonic::{Request, Response, Result, Streaming};
+use tonic::{Request, Response, Result, Status, Streaming};
 use tonic_decl_tests::{
+    attrs::Attrs,
     echo::Echo,
     pb::{EchoReply, EchoRequest},
 };
@@ -60,6 +61,30 @@ impl Echo for MyEcho {
         req: Request<Streaming<EchoRequest>>,
     ) -> Result<Response<Self::BidiStreamingStream>> {
         let stream = req.into_inner().map(echo as fn(_) -> _);
+
+        Ok(Response::new(stream))
+    }
+}
+
+pub struct MyAttrs;
+
+impl Attrs for MyAttrs {
+    async fn ready(&self, req: Request<EchoRequest>) -> Result<Response<EchoReply>> {
+        Ok(Response::new(reply(req.into_inner().message)))
+    }
+
+    async fn old(&self, _: Request<EchoRequest>) -> Result<Response<EchoReply>> {
+        Err(Status::failed_precondition("deprecated"))
+    }
+
+    async fn bidi(
+        &self,
+        req: Request<Streaming<EchoRequest>>,
+    ) -> Result<Response<impl Stream<Item = Result<EchoReply>> + Send + 'static>> {
+        let suffix = String::from("!");
+        let stream = req
+            .into_inner()
+            .map(move |req| req.map(|req| reply(req.message + &suffix)));
 
         Ok(Response::new(stream))
     }

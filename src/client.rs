@@ -60,23 +60,6 @@ macro_rules! __define_client {
                 self
             }
 
-            #[inline]
-            fn ready(
-                &mut self,
-            ) -> impl ::core::future::Future<Output = $crate::__private::tonic::Result<()>> + use<'_, T> {
-                async {
-                    match self.inner.ready().await {
-                        ::core::result::Result::Ok(()) => ::core::result::Result::Ok(()),
-                        ::core::result::Result::Err(e) => {
-                            let e = ::core::convert::Into::<$crate::__private::StdError>::into(e);
-                            ::core::result::Result::Err($crate::__private::tonic::Status::unknown(
-                                ::std::format!("Service was not ready: {}", e),
-                            ))
-                        }
-                    }
-                }
-            }
-
             $(
                 $crate::__define_client! {
                     $service_name,
@@ -104,7 +87,7 @@ macro_rules! __define_client {
             &mut self,
             request: impl $crate::__private::tonic::IntoRequest<$request_ty>,
         ) -> $crate::__private::tonic::Result<$crate::__private::tonic::Response<$response_ty>> {
-            self.ready().await?;
+            $crate::__private::ready(&mut self.inner).await?;
 
             let mut req = $crate::__private::tonic::IntoRequest::into_request(request);
             req.extensions_mut()
@@ -135,7 +118,7 @@ macro_rules! __define_client {
         ) -> $crate::__private::tonic::Result<
             $crate::__private::tonic::Response<$crate::__private::tonic::Streaming<$response_ty>>,
         > {
-            self.ready().await?;
+            $crate::__private::ready(&mut self.inner).await?;
 
             let mut req = $crate::__private::tonic::IntoRequest::into_request(request);
             req.extensions_mut()
@@ -164,7 +147,7 @@ macro_rules! __define_client {
             &mut self,
             request: impl $crate::__private::tonic::IntoStreamingRequest<Message = $request_ty>,
         ) -> $crate::__private::tonic::Result<$crate::__private::tonic::Response<$response_ty>> {
-            self.ready().await?;
+            $crate::__private::ready(&mut self.inner).await?;
 
             let mut req = $crate::__private::tonic::IntoStreamingRequest::into_streaming_request(request);
             req.extensions_mut()
@@ -195,7 +178,7 @@ macro_rules! __define_client {
         ) -> $crate::__private::tonic::Result<
             $crate::__private::tonic::Response<$crate::__private::tonic::Streaming<$response_ty>>,
         > {
-            self.ready().await?;
+            $crate::__private::ready(&mut self.inner).await?;
 
             let mut req = $crate::__private::tonic::IntoStreamingRequest::into_streaming_request(request);
             req.extensions_mut()

@@ -13,6 +13,7 @@ macro_rules! __define_server {
         )*
     ) => {
         $(#[$gate])*
+        $(#[$server_attr])*
         pub trait $trait_name: ::core::marker::Send + ::core::marker::Sync + 'static {
             $(
                 $crate::__define_server! {
@@ -135,6 +136,8 @@ macro_rules! __define_server {
                 B: $crate::__private::http_body::Body + ::core::marker::Send + 'static,
                 B::Error: ::core::convert::Into<$crate::__private::StdError> + ::core::marker::Send + 'static,
             {
+                // the trait methods may be deprecated by the caller
+                #[allow(deprecated)]
                 let svc = move |req: $crate::__private::http::Request<B>| {
                     let server = ::core::clone::Clone::clone(&self);
                     async move {
@@ -142,6 +145,10 @@ macro_rules! __define_server {
 
                         let resp = match req.uri().path().strip_prefix(::core::concat!("/", $service_name, "/")) {
                             $(
+                                // method attributes are copied so that `cfg` removes the route
+                                // together with the trait method, the others are inert here
+                                #[allow(unused_attributes, unused_doc_comments)]
+                                $(#[$method_attr])*
                                 ::core::option::Option::Some($method_name) => {
                                     $crate::__define_server! {
                                         @route

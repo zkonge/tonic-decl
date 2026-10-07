@@ -21,7 +21,7 @@ tower-service.workspace = true
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 tokio-stream.workspace = true
-tonic = { workspace = true, features = ["transport"] }
+tonic = { workspace = true, features = ["transport", "router"] }
 
 [workspace]
 resolver = "3"
